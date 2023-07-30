@@ -1,0 +1,1811 @@
+   dasm48 -- Intel MCS-48 (8048, 8049) Disassembler --
+-----------------------------------------------------------------
+
+;   Processing "2716Q-iskra-keyboard-mcs48-2k.bin" (2048 bytes)
+;   Disassembly start address: 0x0000
+;   String terminator: 0x00
+
+Start:
+;reset vector
+    0000:    04 0A          JMP      0000AH
+    0002:    24 21          JMP      00121H
+;interrupt vector 0003
+    0004:    00             NOP      
+    0005:    24 41          JMP      00141H
+;timer interrupt vector
+    0007:    16 05          JTF      00005H	; JMP 141H
+    0009:    93             RETR     
+
+;start of program
+    000A:    27             CLR      A		;start of program, A=0
+    000B:    A8             MOV      R0, A	;R0=0
+    000C:    9A 6F          ANL      P2, #06FH	; P2 & 1101111
+;init data memory 0-32 to 0
+    000E:    A0             MOV      @R0, A	;@R0=0; (R0 inc each cycle)
+    000F:    18             INC      R0		;R0=1
+    0010:    F8             MOV      A, R0	;A=1
+    0011:    D2 16          JB6      00016H	;jmp to 16H if A bit 6 is set
+    0013:    27             CLR      A		;A=0
+    0014:    04 0E          JMP      0000EH	;jmp to EH
+;end of data memory init
+    0016:    D5             SEL      RB1	;select register bank 1
+    0017:    B8 38          MOV      R0, #038H	;data 24 = 38H
+    0019:    B9 32          MOV      R1, #032H	;data 25 = 32H
+    001B:    BB 32          MOV      R3, #032H	;data 27 = 32H
+    001D:    BA 0B          MOV      R2, #00BH	;data 26 = 0BH
+    001F:    BE 0A          MOV      R6, #00AH	;data 30 = 0AH
+    0021:    C5             SEL      RB0	;select register bank 0
+    0022:    BD 03          MOV      R5, #003H	;R5 = 03H
+    0024:    B8 20          MOV      R0, #020H	;R0 = 20H
+    0026:    23 0E          MOV      A, #00EH	;A=0EH
+    0028:    39             OUTL     P1, A	;P1=0EH
+    0029:    8A 10          ORL      P2, #010H	;P24=1
+    002B:    23 F8          MOV      A, #0F8H	;A=F8H
+    002D:    62             MOV      T, A	;T=F8H
+    002E:    55             STRT     T		;start timer
+    002F:    15             DIS      I		;disable external interrupts
+    0030:    25             EN       TCNTI	;enable timer/counter interrupt
+    0031:    95             CPL      F0		;complement flag 0
+    0032:    B9 2C          MOV      R1, #02CH	;R1 = 2CH
+    0034:    11             INC      @R1	;inc data at 2CH (44) (@2CH=01H)
+    0035:    B9 2F          MOV      R1, #02FH	;R1 = 2FH
+    0037:    11             INC      @R1	;inc data at 2FH (47) (@2FH=01H)
+    0038:    B9 2C          MOV      R1, #02CH	;R1 = 2CH
+    003A:    F1             MOV      A, @R1	;A=data at 2CH= 01H
+    003B:    37             CPL      A		;A=11111110=FEH
+    003C:    12 49          JB0      00049H	;jump to 49H if A bit 0 is set
+;jump from 13B
+    003E:    43 01          ORL      A, #001H	;A|01H (set bit 0) (1. A=FFH)(2. A=2DH)
+    0040:    37             CPL      A		;(1. A=00H)(2. A=D2H)
+    0041:    A1             MOV      @R1, A	;data at R1(1. @2CH (44) =00H) (2. @2CH=D2H)
+    0042:    B9 2F          MOV      R1, #02FH	;R1=2FH
+    0044:    F1             MOV      A, @R1	;A=data at 2FH(=01H)
+    0045:    B9 2C          MOV      R1, #02CH	;R1=2CH
+    0047:    64 C9          JMP      003C9H	;
+
+;jumo from 3C
+    0049:    18             INC      R0		;R0=20H+1=21H
+    004A:    F8             MOV      A, R0	;A=21H
+    004B:    D3 2C          XRL      A, #02CH	;A = 21H XOR 2CH = 0DH
+    004D:    96 51          JNZ      00051H	;jump if A is not 0
+    004F:    B8 20          MOV      R0, #020H
+    0051:    14 7E          CALL     0007EH	;subroutine 7EH
+
+    0053:    D0             XRL      A, @R0	;A= kbd matrix data (inverted, 1=keypress) R0=21H (data @21H uninitialized?)
+    0054:    C6 38          JZ       00038H
+    0056:    14 AF          CALL     000AFH
+    0058:    A9             MOV      R1, A
+    0059:    50             ANL      A, @R0
+    005A:    96 65          JNZ      00065H
+    005C:    14 7E          CALL     0007EH
+    005E:    D0             XRL      A, @R0
+    005F:    D9             XRL      A, R1
+    0060:    96 38          JNZ      00038H
+    0062:    F9             MOV      A, R1
+    0063:    04 B8          JMP      000B8H
+    0065:    A9             MOV      R1, A
+    0066:    23 0F          MOV      A, #00FH
+    0068:    39             OUTL     P1, A
+    0069:    9A EF          ANL      P2, #0EFH
+    006B:    8A 10          ORL      P2, #010H
+    006D:    14 7E          CALL     0007EH
+    006F:    59             ANL      A, R1
+    0070:    2B             XCH      A, R3
+    0071:    23 0E          MOV      A, #00EH
+    0073:    39             OUTL     P1, A
+    0074:    9A EF          ANL      P2, #0EFH
+    0076:    8A 10          ORL      P2, #010H
+    0078:    2B             XCH      A, R3
+    0079:    96 38          JNZ      00038H
+    007B:    F9             MOV      A, R1
+    007C:    24 02          JMP      00102H
+
+; subroutine jump from 51H
+; KEYBOARD MATRIX I/O
+    007E:    F8             MOV      A, R0	;A=R0=21H
+    007F:    39             OUTL     P1, A	;P1=21H ;key bus = 21H
+    0080:    9A EF          ANL      P2, #0EFH	;P24=0	
+    0082:    8A 10          ORL      P2, #010H	;P24=1	;load key bus into key matrix (bits 0-3)
+    0084:    89 FF          ORL      P1, #0FFH	;P1=FFH	;pull key bus high
+    0086:    09             IN       A, P1	;A=P1	;read key bus
+    0087:    E4 C0          JMP      007C0H	;
+
+    0089:    FC             MOV      A, R4
+    008A:    D5             SEL      RB1
+    008B:    1F             INC      R7
+    008C:    A0             MOV      @R0, A
+    008D:    18             INC      R0
+    008E:    F8             MOV      A, R0
+    008F:    D2 92          JB6      00092H
+    0091:    93             RETR     
+    0092:    B8 38          MOV      R0, #038H
+    0094:    93             RETR     
+    0095:    B9 00          MOV      R1, #000H
+    0097:    12 9D          JB0      0009DH
+    0099:    77             RR       A
+    009A:    19             INC      R1
+    009B:    04 97          JMP      00097H
+    009D:    F8             MOV      A, R0
+    009E:    53 1F          ANL      A, #01FH
+    00A0:    E7             RL       A
+    00A1:    E7             RL       A
+    00A2:    E7             RL       A
+    00A3:    49             ORL      A, R1
+    00A4:    AC             MOV      R4, A
+    00A5:    23 01          MOV      A, #001H
+    00A7:    19             INC      R1
+    00A8:    04 AB          JMP      000ABH
+    00AA:    E7             RL       A
+    00AB:    E9 AA          DJNZ     R1, 000AAH
+    00AD:    AB             MOV      R3, A
+    00AE:    93             RETR     
+    00AF:    B9 1E          MOV      R1, #01EH
+    00B1:    E9 B1          DJNZ     R1, 000B1H
+    00B3:    93             RETR     
+    00B4:    F0             MOV      A, @R0
+    00B5:    DB             XRL      A, R3
+    00B6:    A0             MOV      @R0, A
+    00B7:    93             RETR     
+    00B8:    14 95          CALL     00095H
+    00BA:    F8             MOV      A, R0
+    00BB:    D3 20          XRL      A, #020H
+    00BD:    96 C8          JNZ      000C8H
+    00BF:    FB             MOV      A, R3
+    00C0:    D2 F9          JB6      000F9H
+    00C2:    B2 F7          JB5      000F7H
+    00C4:    92 F9          JB4      000F9H
+    00C6:    F2 F9          JB7      000F9H
+    00C8:    D5             SEL      RB1
+    00C9:    F9             MOV      A, R1
+    00CA:    C5             SEL      RB0
+    00CB:    C6 38          JZ       00038H
+    00CD:    FC             MOV      A, R4
+    00CE:    B9 2D          MOV      R1, #02DH
+    00D0:    A1             MOV      @R1, A
+    00D1:    74 84          CALL     00384H
+    00D3:    14 EE          CALL     000EEH
+    00D5:    14 89          CALL     00089H
+    00D7:    F9             MOV      A, R1
+    00D8:    D5             SEL      RB1
+    00D9:    34 30          CALL     00130H
+
+;jump from 7C1
+    00DB:    C5             SEL      RB0
+    00DC:    14 B4          CALL     000B4H
+;jump from 7C4
+    00DE:    B9 20          MOV      R1, #020H
+;jump from 7C7
+    00E0:    F1             MOV      A, @R1
+    00E1:    92 02          JB4      00002H
+;jump from 7CA
+    00E3:    54 EF          CALL     002EFH
+    00E5:    5B             ANL      A, R3
+;jump from 7CD
+    00E6:    96 02          JNZ      00002H
+    00E8:    D5             SEL      RB1
+;jump from 7D0
+    00E9:    BC 32          MOV      R4, #032H
+    00EB:    C5             SEL      RB0
+;jump from 7D3
+    00EC:    04 38          JMP      00038H
+    00EE:    42             MOV      A, T
+    00EF:    03 02          ADD      A, #002H
+    00F1:    F2 F6          JB7      000F6H
+    00F3:    B5             CPL      F1
+    00F4:    76 F4          JF1      000F4H
+    00F6:    93             RETR     
+    00F7:    8A 80          ORL      P2, #080H
+    00F9:    14 B4          CALL     000B4H
+    00FB:    14 EE          CALL     000EEH
+    00FD:    14 89          CALL     00089H
+    00FF:    04 38          JMP      00038H
+    0101:    00             NOP      
+    0102:    14 95          CALL     00095H
+    0104:    B9 40          MOV      R1, #040H
+    0106:    C9             DEC      R1
+    0107:    23 37          MOV      A, #037H
+    0109:    D9             XRL      A, R1
+    010A:    C6 14          JZ       00014H
+    010C:    F1             MOV      A, @R1
+    010D:    DC             XRL      A, R4
+    010E:    C6 12          JZ       00012H
+    0110:    24 06          JMP      00106H
+    0112:    04 38          JMP      00038H
+    0114:    14 B4          CALL     000B4H
+    0116:    FC             MOV      A, R4
+    0117:    D3 05          XRL      A, #005H
+    0119:    C6 27          JZ       00027H
+    011B:    B9 2D          MOV      R1, #02DH
+    011D:    F1             MOV      A, @R1
+    011E:    DC             XRL      A, R4
+    011F:    96 25          JNZ      00025H
+    0121:    D5             SEL      RB1
+    0122:    BC 00          MOV      R4, #000H
+    0124:    C5             SEL      RB0
+    0125:    04 38          JMP      00038H
+    0127:    95             CPL      F0
+    0128:    B6 2C          JF0      0002CH
+    012A:    04 38          JMP      00038H
+    012C:    9A 7F          ANL      P2, #07FH
+    012E:    04 38          JMP      00038H
+
+;subroutine call from D9H
+;(1. A=01H R1=2CH depth=1)
+;(2. A=01H R1=2CH  depth=3)
+    0130:    A1             MOV      @R1, A	;@2CH=01H
+    0131:    F9             MOV      A, R1	;A=2CH
+    0132:    34 3A          CALL     0013AH
+    
+    0134:    A9             MOV      R1, A
+    0135:    DB             XRL      A, R3
+    0136:    96 39          JNZ      00039H
+    0138:    A9             MOV      R1, A
+    0139:    93             RETR     
+
+;subroutine call from 132H
+;(1. A=2CH R1=2CH depth=2)
+;(2. A=2CH R1=2CH depth=4)
+    013A:    17             INC      A		;A=2CH+1=2DH
+    013B:    72 3E          JB3      0003EH
+    013D:    93             RETR     
+
+    013E:    23 32          MOV      A, #032H
+    0140:    93             RETR     
+
+; timer overflow routine
+    0141:    C5             SEL      RB0
+    0142:    AF             MOV      R7, A
+    0143:    65             STOP     TCNT
+    0144:    55             STRT     T
+    0145:    23 2E          MOV      A, #02EH
+    0147:    28             XCH      A, R0
+    0148:    A0             MOV      @R0, A
+    0149:    23 F8          MOV      A, #0F8H
+    014B:    62             MOV      T, A
+    014C:    FA             MOV      A, R2
+    014D:    C6 9F          JZ       0009FH
+    014F:    ED 9F          DJNZ     R5, 0009FH
+    0151:    BD 03          MOV      R5, #003H
+    0153:    EA 57          DJNZ     R2, 00057H
+    0155:    24 68          JMP      00168H
+
+    0157:    D3 0A          XRL      A, #00AH
+    0159:    C6 6C          JZ       0006CH
+    015B:    FE             MOV      A, R6
+    015C:    12 62          JB0      00062H
+    015E:    9A DF          ANL      P2, #0DFH
+    0160:    24 64          JMP      00164H
+
+    0162:    8A 20          ORL      P2, #020H
+    0164:    77             RR       A
+    0165:    AE             MOV      R6, A
+    0166:    24 9F          JMP      0019FH
+
+    0168:    8A 20          ORL      P2, #020H
+    016A:    24 9F          JMP      0019FH
+
+    016C:    9A DF          ANL      P2, #0DFH
+    016E:    24 9F          JMP      0019FH
+
+    0170:    D5             SEL      RB1
+    0171:    FB             MOV      A, R3
+    0172:    D9             XRL      A, R1
+    0173:    C6 E7          JZ       000E7H
+    0175:    FB             MOV      A, R3
+    0176:    29             XCH      A, R1
+    0177:    96 80          JNZ      00080H
+    0179:    F1             MOV      A, @R1
+    017A:    2B             XCH      A, R3
+    017B:    34 3A          CALL     0013AH
+    017D:    2B             XCH      A, R3
+    017E:    24 87          JMP      00187H
+
+    0180:    2B             XCH      A, R3
+    0181:    F1             MOV      A, @R1
+    0182:    29             XCH      A, R1
+    0183:    34 3A          CALL     0013AH
+    0185:    2B             XCH      A, R3
+    0186:    29             XCH      A, R1
+    0187:    C5             SEL      RB0
+    0188:    AE             MOV      R6, A
+    0189:    BA 0A          MOV      R2, #00AH
+    018B:    91             MOVX     @R1, A
+    018C:    36 8F          JT0      0008FH
+    018E:    02             OUTL     BUS, A
+    018F:    3C             MOVD     P4, A
+    0190:    B8 2C          MOV      R0, #02CH
+    0192:    F0             MOV      A, @R0
+    0193:    72 E7          JB3      000E7H
+    0195:    B8 31          MOV      R0, #031H
+    0197:    F0             MOV      A, @R0
+    0198:    96 E7          JNZ      000E7H
+    019A:    23 0A          MOV      A, #00AH
+    019C:    A0             MOV      @R0, A
+    019D:    24 E7          JMP      001E7H
+
+    019F:    D5             SEL      RB1
+    01A0:    FA             MOV      A, R2
+    01A1:    07             DEC      A
+    01A2:    C6 C1          JZ       000C1H
+    01A4:    D3 0A          XRL      A, #00AH
+    01A6:    C6 B8          JZ       000B8H
+    01A8:    FA             MOV      A, R2
+    01A9:    D3 0A          XRL      A, #00AH
+    01AB:    96 D0          JNZ      000D0H
+    01AD:    86 B3          JNI      000B3H
+    01AF:    BA 0B          MOV      R2, #00BH
+    01B1:    24 E3          JMP      001E3H
+
+    01B3:    BD 03          MOV      R5, #003H
+    01B5:    CA             DEC      R2
+    01B6:    24 E3          JMP      001E3H
+
+    01B8:    86 BC          JNI      000BCH
+    01BA:    24 E3          JMP      001E3H
+
+    01BC:    BD 01          MOV      R5, #001H
+    01BE:    CA             DEC      R2
+    01BF:    24 E3          JMP      001E3H
+
+    01C1:    ED E3          DJNZ     R5, 000E3H
+    01C3:    BA 0B          MOV      R2, #00BH
+    01C5:    86 E3          JNI      000E3H
+    01C7:    C5             SEL      RB0
+    01C8:    B8 2C          MOV      R0, #02CH
+    01CA:    F0             MOV      A, @R0
+    01CB:    43 01          ORL      A, #001H
+    01CD:    A0             MOV      @R0, A
+    01CE:    24 E3          JMP      001E3H
+
+    01D0:    ED E3          DJNZ     R5, 000E3H
+    01D2:    BD 03          MOV      R5, #003H
+    01D4:    CA             DEC      R2
+    01D5:    C5             SEL      RB0
+    01D6:    B8 2F          MOV      R0, #02FH
+    01D8:    F0             MOV      A, @R0
+    01D9:    77             RR       A
+    01DA:    86 E0          JNI      000E0H
+    01DC:    43 80          ORL      A, #080H
+    01DE:    24 E2          JMP      001E2H
+    01E0:    53 7F          ANL      A, #07FH
+    01E2:    A0             MOV      @R0, A
+    01E3:    C5             SEL      RB0
+    01E4:    FA             MOV      A, R2
+    01E5:    C6 70          JZ       00070H
+    01E7:    C5             SEL      RB0
+    01E8:    B8 31          MOV      R0, #031H
+    01EA:    F0             MOV      A, @R0
+    01EB:    C6 F1          JZ       000F1H
+    01ED:    07             DEC      A
+    01EE:    A0             MOV      @R0, A
+    01EF:    24 F5          JMP      001F5H
+
+    01F1:    8A 40          ORL      P2, #040H
+    01F3:    24 F9          JMP      001F9H
+    01F5:    0A             IN       A, P2
+    01F6:    D3 40          XRL      A, #040H
+    01F8:    3A             OUTL     P2, A
+    01F9:    D5             SEL      RB1
+    01FA:    EE FE          DJNZ     R6, 000FEH
+    01FC:    44 00          JMP      00200H
+
+    01FE:    44 27          JMP      00227H
+
+    0200:    BE 09          MOV      R6, #009H
+    0202:    FF             MOV      A, R7
+    0203:    C6 07          JZ       00007H
+    0205:    EF 0A          DJNZ     R7, 0000AH
+    0207:    27             CLR      A
+    0208:    14 8C          CALL     0008CH
+    020A:    FC             MOV      A, R4
+    020B:    C6 27          JZ       00027H
+    020D:    EC 27          DJNZ     R4, 00027H
+    020F:    BC 05          MOV      R4, #005H
+    0211:    C5             SEL      RB0
+    0212:    FE             MOV      A, R6
+    0213:    91             MOVX     @R1, A
+    0214:    36 17          JT0      00017H
+    0216:    02             OUTL     BUS, A
+    0217:    3C             MOVD     P4, A
+    0218:    BA 0A          MOV      R2, #00AH
+    021A:    B8 2C          MOV      R0, #02CH
+    021C:    F0             MOV      A, @R0
+    021D:    72 27          JB3      00027H
+    021F:    B8 31          MOV      R0, #031H
+    0221:    F0             MOV      A, @R0
+    0222:    96 27          JNZ      00027H
+    0224:    23 0A          MOV      A, #00AH
+    0226:    A0             MOV      @R0, A
+    0227:    C5             SEL      RB0
+    0228:    B8 2E          MOV      R0, #02EH
+    022A:    F0             MOV      A, @R0
+    022B:    A8             MOV      R0, A
+    022C:    FF             MOV      A, R7
+    022D:    A5             CLR      F1
+    022E:    93             RETR     
+    022F:    A3             MOVP     A, @A
+    0230:    93             RETR     
+    0231:    F1             MOV      A, @R1
+    0232:    43 08          ORL      A, #008H
+    0234:    A1             MOV      @R1, A
+    0235:    04 49          JMP      00049H
+    0237:    00             NOP      
+    0238:    00             NOP      
+    0239:    00             NOP      
+    023A:    00             NOP      
+    023B:    00             NOP      
+    023C:    00             NOP      
+    023D:    00             NOP      
+    023E:    00             NOP      
+    023F:    00             NOP      
+    0240:    00             NOP      
+    0241:    98 00          ANL      BUS, #000H
+    0243:    00             NOP      
+    0244:    00             NOP      
+    0245:    00             NOP      
+    0246:    00             NOP      
+    0247:    00             NOP      
+    0248:    1B             INC      R3
+    0249:    31             XCHD     A, @R1
+    024A:    09             IN       A, P1
+    024B:    71             ADDC     A, @R1
+    024C:    61             ADD      A, @R1
+    024D:    73             ???      
+    024E:    93             RETR     
+    024F:    A0             MOV      @R0, A
+    0250:    32 33          JB1      00033H
+    0252:    77             RR       A
+    0253:    65             STOP     TCNT
+    0254:    64 66          JMP      00366H
+    0256:    79             ADDC     A, R1
+    0257:    78             ADDC     A, R0
+    0258:    34 35          CALL     00135H
+    025A:    72 74          JB3      00074H
+    025C:    67             RRC      A
+    025D:    68             ADD      A, R0
+    025E:    63             ???      
+    025F:    76 36          JF1      00036H
+    0261:    37             CPL      A
+    0262:    7A             ADDC     A, R2
+    0263:    75             ENT0     CLK
+    0264:    6A             ADD      A, R2
+    0265:    6B             ADD      A, R3
+    0266:    62             MOV      T, A
+    0267:    6E             ADD      A, R6
+    0268:    38             ???      
+    0269:    39             OUTL     P1, A
+    026A:    69             ADD      A, R1
+    026B:    6F             ADD      A, R7
+    026C:    6C             ADD      A, R4
+    026D:    7E             ADDC     A, R6
+    026E:    6D             ADD      A, R5
+    026F:    2C             XCH      A, R4
+    0270:    30             XCHD     A, @R0
+    0271:    2D             XCH      A, R5
+    0272:    70             ADDC     A, @R0
+    0273:    7B             ADDC     A, R3
+    0274:    7D             ADDC     A, R5
+    0275:    0D             MOVD     A, P5
+    0276:    2E             XCH      A, R6
+    0277:    60             ADD      A, @R0
+    0278:    3D             MOVD     P5, A
+    0279:    2F             XCH      A, R7
+    027A:    7C             ADDC     A, R4
+    027B:    D4 3C          CALL     0063CH
+    027D:    B1 B0          MOV      @R1, #0B0H
+    027F:    0A             IN       A, P2
+    0280:    08             INS      A, BUS
+    0281:    80             MOVX     A, @R0
+    0282:    7F             ADDC     A, R7
+    0283:    B4 B2          CALL     005B2H
+    0285:    B3             JMPP     @A
+    0286:    00             NOP      
+    0287:    AE             MOV      R6, A
+    0288:    B7             ???      
+    0289:    B8 B5          MOV      R0, #0B5H
+    028B:    B6 85          JF0      00085H
+    028D:    84 88          JMP      00488H
+    028F:    8A B9          ORL      P2, #0B9H
+    0291:    AD             MOV      R5, A
+    0292:    AC             MOV      R4, A
+    0293:    87             ???      
+    0294:    86 F5          JNI      000F5H
+    0296:    8C             ORLD     P4, A
+    0297:    8B             ???      
+    0298:    F0             MOV      A, @R0
+    0299:    A4 A3          JMP      005A3H
+    029B:    A2             ???      
+    029C:    A1             MOV      @R1, A
+    029D:    8D             ORLD     P5, A
+    029E:    A5             CLR      F1
+    029F:    20             XCH      A, @R0
+    02A0:    00             NOP      
+    02A1:    98 00          ANL      BUS, #000H
+    02A3:    00             NOP      
+    02A4:    00             NOP      
+    02A5:    00             NOP      
+    02A6:    00             NOP      
+    02A7:    00             NOP      
+    02A8:    1B             INC      R3
+    02A9:    21             XCH      A, @R1
+    02AA:    09             IN       A, P1
+    02AB:    51             ANL      A, @R1
+    02AC:    41             ORL      A, @R1
+    02AD:    53 93          ANL      A, #093H
+    02AF:    A0             MOV      @R0, A
+    02B0:    22             ???      
+    02B1:    23 57          MOV      A, #057H
+    02B3:    45             STRT     CNT
+    02B4:    44 46          JMP      00246H
+    02B6:    59             ANL      A, R1
+    02B7:    58             ANL      A, R0
+    02B8:    24 25          JMP      00125H
+    02BA:    52 54          JB2      00054H
+    02BC:    47             SWAP     A
+    02BD:    48             ORL      A, R0
+    02BE:    43 56          ORL      A, #056H
+    02C0:    27             CLR      A
+    02C1:    26 5A          JNT0     0005AH
+    02C3:    55             STRT     T
+    02C4:    4A             ORL      A, R2
+    02C5:    4B             ORL      A, R3
+    02C6:    42             MOV      A, T
+    02C7:    4E             ORL      A, R6
+    02C8:    2A             XCH      A, R2
+    02C9:    28             XCH      A, R0
+    02CA:    49             ORL      A, R1
+    02CB:    4F             ORL      A, R7
+    02CC:    4C             ORL      A, R4
+    02CD:    5E             ANL      A, R6
+    02CE:    4D             ORL      A, R5
+    02CF:    3B             ???      
+    02D0:    29             XCH      A, R1
+    02D1:    5F             ANL      A, R7
+    02D2:    50             ANL      A, @R0
+    02D3:    5B             ANL      A, R3
+    02D4:    5D             ANL      A, R5
+    02D5:    0D             MOVD     A, P5
+    02D6:    3A             OUTL     P2, A
+    02D7:    40             ORL      A, @R0
+    02D8:    2B             XCH      A, R3
+    02D9:    3F             MOVD     P7, A
+    02DA:    5C             ANL      A, R4
+    02DB:    D6             ???      
+    02DC:    3E             MOVD     P6, A
+    02DD:    B1 B0          MOV      @R1, #0B0H
+    02DF:    0A             IN       A, P2
+    02E0:    08             INS      A, BUS
+    02E1:    80             MOVX     A, @R0
+    02E2:    7F             ADDC     A, R7
+    02E3:    00             NOP      
+    02E4:    38             ???      
+    02E5:    FC             MOV      A, R4
+    02E6:    FC             MOV      A, R4
+    02E7:    FC             MOV      A, R4
+    02E8:    7C             ADDC     A, R4
+    02E9:    9C             ANLD     P4, A
+    02EA:    04 00          JMP      Start
+    02EC:    00             NOP      
+    02ED:    00             NOP      
+    02EE:    00             NOP      
+    02EF:    F8             MOV      A, R0
+    02F0:    03 D4          ADD      A, #0D4H
+    02F2:    A3             MOVP     A, @A
+    02F3:    83             RET      
+    02F4:    02             OUTL     BUS, A
+    02F5:    45             STRT     CNT
+    02F6:    00             NOP      
+    02F7:    00             NOP      
+    02F8:    00             NOP      
+    02F9:    00             NOP      
+    02FA:    20             XCH      A, @R0
+    02FB:    00             NOP      
+    02FC:    02             OUTL     BUS, A
+    02FD:    00             NOP      
+    02FE:    00             NOP      
+    02FF:    00             NOP      
+    0300:    00             NOP      
+    0301:    98 00          ANL      BUS, #000H
+    0303:    00             NOP      
+    0304:    00             NOP      
+    0305:    00             NOP      
+    0306:    00             NOP      
+    0307:    00             NOP      
+    0308:    1B             INC      R3
+    0309:    31             XCHD     A, @R1
+    030A:    09             IN       A, P1
+    030B:    11             INC      @R1
+    030C:    01             ???      
+    030D:    13 93          ADDC     A, #093H
+    030F:    A0             MOV      @R0, A
+    0310:    32 33          JB1      00033H
+    0312:    17             INC      A
+    0313:    05             EN       I
+    0314:    04 06          JMP      00006H
+    0316:    19             INC      R1
+    0317:    18             INC      R0
+    0318:    34 35          CALL     00135H
+    031A:    12 14          JB0      00014H
+    031C:    07             DEC      A
+    031D:    08             INS      A, BUS
+    031E:    03 16          ADD      A, #016H
+    0320:    36 37          JT0      00037H
+    0322:    1A             INC      R2
+    0323:    15             DIS      I
+    0324:    0A             IN       A, P2
+    0325:    0B             ???      
+    0326:    02             OUTL     BUS, A
+    0327:    0E             MOVD     A, P6
+    0328:    38             ???      
+    0329:    39             OUTL     P1, A
+    032A:    09             IN       A, P1
+    032B:    0F             MOVD     A, P7
+    032C:    0C             MOVD     A, P4
+    032D:    1E             INC      R6
+    032E:    0D             MOVD     A, P5
+    032F:    2C             XCH      A, R4
+    0330:    30             XCHD     A, @R0
+    0331:    2D             XCH      A, R5
+    0332:    10             INC      @R0
+    0333:    1B             INC      R3
+    0334:    1D             INC      R5
+    0335:    0D             MOVD     A, P5
+    0336:    2E             XCH      A, R6
+    0337:    00             NOP      
+    0338:    3D             MOVD     P5, A
+    0339:    2F             XCH      A, R7
+    033A:    1C             INC      R4
+    033B:    D4 3C          CALL     0063CH
+    033D:    B1 B0          MOV      @R1, #0B0H
+    033F:    0A             IN       A, P2
+    0340:    08             INS      A, BUS
+    0341:    80             MOVX     A, @R0
+    0342:    00             NOP      
+    0343:    98 00          ANL      BUS, #000H
+    0345:    00             NOP      
+    0346:    00             NOP      
+    0347:    00             NOP      
+    0348:    00             NOP      
+    0349:    00             NOP      
+    034A:    1B             INC      R3
+    034B:    21             XCH      A, @R1
+    034C:    09             IN       A, P1
+    034D:    11             INC      @R1
+    034E:    01             ???      
+    034F:    13 93          ADDC     A, #093H
+    0351:    A0             MOV      @R0, A
+    0352:    22             ???      
+    0353:    23 17          MOV      A, #017H
+    0355:    05             EN       I
+    0356:    04 06          JMP      00006H
+    0358:    19             INC      R1
+    0359:    18             INC      R0
+    035A:    24 25          JMP      00125H
+    035C:    12 14          JB0      00014H
+    035E:    07             DEC      A
+    035F:    08             INS      A, BUS
+    0360:    03 16          ADD      A, #016H
+    0362:    27             CLR      A
+    0363:    26 1A          JNT0     0001AH
+    0365:    15             DIS      I
+    0366:    0A             IN       A, P2
+    0367:    0B             ???      
+    0368:    02             OUTL     BUS, A
+    0369:    0E             MOVD     A, P6
+    036A:    2A             XCH      A, R2
+    036B:    28             XCH      A, R0
+    036C:    09             IN       A, P1
+    036D:    0F             MOVD     A, P7
+    036E:    0C             MOVD     A, P4
+    036F:    1E             INC      R6
+    0370:    0D             MOVD     A, P5
+    0371:    3B             ???      
+    0372:    29             XCH      A, R1
+    0373:    5F             ANL      A, R7
+    0374:    10             INC      @R0
+    0375:    1B             INC      R3
+    0376:    1D             INC      R5
+    0377:    0D             MOVD     A, P5
+    0378:    3A             OUTL     P2, A
+    0379:    00             NOP      
+    037A:    2B             XCH      A, R3
+    037B:    3F             MOVD     P7, A
+    037C:    1C             INC      R4
+    037D:    D6             ???      
+    037E:    3E             MOVD     P6, A
+    037F:    B1 B0          MOV      @R1, #0B0H
+    0381:    0A             IN       A, P2
+    0382:    08             INS      A, BUS
+    0383:    80             MOVX     A, @R0
+    0384:    B9 20          MOV      R1, #020H
+    0386:    F1             MOV      A, @R1
+    0387:    92 A2          JB4      000A2H
+    0389:    D2 97          JB6      00097H
+    038B:    F2 97          JB7      00097H
+    038D:    0A             IN       A, P2
+    038E:    F2 BA          JB7      000BAH
+    0390:    FC             MOV      A, R4
+    0391:    03 40          ADD      A, #040H
+    0393:    54 2F          CALL     0022FH
+    0395:    64 C4          JMP      003C4H
+    0397:    FC             MOV      A, R4
+    0398:    03 3E          ADD      A, #03EH
+    039A:    F2 90          JB7      00090H
+    039C:    03 62          ADD      A, #062H
+    039E:    54 2F          CALL     0022FH
+    03A0:    64 C4          JMP      003C4H
+    03A2:    D2 AF          JB6      000AFH
+    03A4:    F2 AF          JB7      000AFH
+    03A6:    FC             MOV      A, R4
+    03A7:    03 3E          ADD      A, #03EH
+    03A9:    F2 90          JB7      00090H
+    03AB:    FC             MOV      A, R4
+    03AC:    E3             MOVP3    A, @A
+    03AD:    64 C4          JMP      003C4H
+    03AF:    FC             MOV      A, R4
+    03B0:    03 3E          ADD      A, #03EH
+    03B2:    F2 90          JB7      00090H
+    03B4:    FC             MOV      A, R4
+    03B5:    03 42          ADD      A, #042H
+    03B7:    E3             MOVP3    A, @A
+    03B8:    64 C4          JMP      003C4H
+    03BA:    F8             MOV      A, R0
+    03BB:    03 C3          ADD      A, #0C3H
+    03BD:    54 2F          CALL     0022FH
+    03BF:    5B             ANL      A, R3
+    03C0:    C6 90          JZ       00090H
+    03C2:    64 97          JMP      00397H
+    03C4:    46 C7          JNT1     000C7H
+    03C6:    37             CPL      A
+    03C7:    A9             MOV      R1, A
+    03C8:    93             RETR     
+
+;jump from 47H
+;(1. A=01H R1=2CH)
+    03C9:    12 D9          JB0      000D9H	;jump to D9H if A bit 0 is set (CALL 130H)
+    03CB:    32 E2          JB1      000E2H
+    03CD:    52 E9          JB2      000E9H
+    03CF:    72 ED          JB3      000EDH
+    03D1:    92 EF          JB4      000EFH
+    03D3:    F1             MOV      A, @R1
+    03D4:    53 F7          ANL      A, #0F7H
+    03D6:    A1             MOV      @R1, A
+    03D7:    04 49          JMP      00049H
+    03D9:    B9 30          MOV      R1, #030H
+    03DB:    A1             MOV      @R1, A
+    03DC:    9A EF          ANL      P2, #0EFH
+    03DE:    39             OUTL     P1, A
+    03DF:    81             MOVX     A, @R1
+    03E0:    04 49          JMP      00049H
+    03E2:    23 64          MOV      A, #064H
+    03E4:    B9 31          MOV      R1, #031H
+    03E6:    A1             MOV      @R1, A
+    03E7:    04 49          JMP      00049H
+    03E9:    23 FF          MOV      A, #0FFH
+    03EB:    64 E4          JMP      003E4H
+    03ED:    44 31          JMP      00231H
+    03EF:    D5             SEL      RB1
+    03F0:    F9             MOV      A, R1
+    03F1:    C5             SEL      RB0
+    03F2:    96 F6          JNZ      000F6H
+    03F4:    04 49          JMP      00049H
+    03F6:    14 EE          CALL     000EEH
+    03F8:    23 AA          MOV      A, #0AAH
+    03FA:    D5             SEL      RB1
+    03FB:    34 30          CALL     00130H
+    03FD:    C5             SEL      RB0
+    03FE:    04 49          JMP      00049H
+    0400:    FF             MOV      A, R7
+    0401:    FF             MOV      A, R7
+    0402:    FF             MOV      A, R7
+    0403:    FF             MOV      A, R7
+    0404:    FF             MOV      A, R7
+    0405:    FF             MOV      A, R7
+    0406:    FF             MOV      A, R7
+    0407:    FF             MOV      A, R7
+    0408:    FF             MOV      A, R7
+    0409:    FF             MOV      A, R7
+    040A:    FF             MOV      A, R7
+    040B:    FF             MOV      A, R7
+    040C:    FF             MOV      A, R7
+    040D:    FF             MOV      A, R7
+    040E:    FF             MOV      A, R7
+    040F:    FF             MOV      A, R7
+    0410:    FF             MOV      A, R7
+    0411:    FF             MOV      A, R7
+    0412:    FF             MOV      A, R7
+    0413:    FF             MOV      A, R7
+    0414:    FF             MOV      A, R7
+    0415:    FF             MOV      A, R7
+    0416:    FF             MOV      A, R7
+    0417:    FF             MOV      A, R7
+    0418:    FF             MOV      A, R7
+    0419:    FF             MOV      A, R7
+    041A:    FF             MOV      A, R7
+    041B:    FF             MOV      A, R7
+    041C:    FF             MOV      A, R7
+    041D:    FF             MOV      A, R7
+    041E:    FF             MOV      A, R7
+    041F:    FF             MOV      A, R7
+    0420:    FF             MOV      A, R7
+    0421:    FF             MOV      A, R7
+    0422:    FF             MOV      A, R7
+    0423:    FF             MOV      A, R7
+    0424:    FF             MOV      A, R7
+    0425:    FF             MOV      A, R7
+    0426:    FF             MOV      A, R7
+    0427:    FF             MOV      A, R7
+    0428:    FF             MOV      A, R7
+    0429:    FF             MOV      A, R7
+    042A:    FF             MOV      A, R7
+    042B:    FF             MOV      A, R7
+    042C:    FF             MOV      A, R7
+    042D:    FF             MOV      A, R7
+    042E:    FF             MOV      A, R7
+    042F:    FF             MOV      A, R7
+    0430:    FF             MOV      A, R7
+    0431:    FF             MOV      A, R7
+    0432:    FF             MOV      A, R7
+    0433:    FF             MOV      A, R7
+    0434:    FF             MOV      A, R7
+    0435:    FF             MOV      A, R7
+    0436:    FF             MOV      A, R7
+    0437:    FF             MOV      A, R7
+    0438:    FF             MOV      A, R7
+    0439:    FF             MOV      A, R7
+    043A:    FF             MOV      A, R7
+    043B:    FF             MOV      A, R7
+    043C:    FF             MOV      A, R7
+    043D:    FF             MOV      A, R7
+    043E:    FF             MOV      A, R7
+    043F:    FF             MOV      A, R7
+    0440:    FF             MOV      A, R7
+    0441:    FF             MOV      A, R7
+    0442:    FF             MOV      A, R7
+    0443:    FF             MOV      A, R7
+    0444:    FF             MOV      A, R7
+    0445:    FF             MOV      A, R7
+    0446:    FF             MOV      A, R7
+    0447:    FF             MOV      A, R7
+    0448:    FF             MOV      A, R7
+    0449:    FF             MOV      A, R7
+    044A:    FF             MOV      A, R7
+    044B:    FF             MOV      A, R7
+    044C:    FF             MOV      A, R7
+    044D:    FF             MOV      A, R7
+    044E:    FF             MOV      A, R7
+    044F:    FF             MOV      A, R7
+    0450:    FF             MOV      A, R7
+    0451:    FF             MOV      A, R7
+    0452:    FF             MOV      A, R7
+    0453:    FF             MOV      A, R7
+    0454:    FF             MOV      A, R7
+    0455:    FF             MOV      A, R7
+    0456:    FF             MOV      A, R7
+    0457:    FF             MOV      A, R7
+    0458:    FF             MOV      A, R7
+    0459:    FF             MOV      A, R7
+    045A:    FF             MOV      A, R7
+    045B:    FF             MOV      A, R7
+    045C:    FF             MOV      A, R7
+    045D:    FF             MOV      A, R7
+    045E:    FF             MOV      A, R7
+    045F:    FF             MOV      A, R7
+    0460:    FF             MOV      A, R7
+    0461:    FF             MOV      A, R7
+    0462:    FF             MOV      A, R7
+    0463:    FF             MOV      A, R7
+    0464:    FF             MOV      A, R7
+    0465:    FF             MOV      A, R7
+    0466:    FF             MOV      A, R7
+    0467:    FF             MOV      A, R7
+    0468:    FF             MOV      A, R7
+    0469:    FF             MOV      A, R7
+    046A:    FF             MOV      A, R7
+    046B:    FF             MOV      A, R7
+    046C:    FF             MOV      A, R7
+    046D:    FF             MOV      A, R7
+    046E:    FF             MOV      A, R7
+    046F:    FF             MOV      A, R7
+    0470:    FF             MOV      A, R7
+    0471:    FF             MOV      A, R7
+    0472:    FF             MOV      A, R7
+    0473:    FF             MOV      A, R7
+    0474:    FF             MOV      A, R7
+    0475:    FF             MOV      A, R7
+    0476:    FF             MOV      A, R7
+    0477:    FF             MOV      A, R7
+    0478:    FF             MOV      A, R7
+    0479:    FF             MOV      A, R7
+    047A:    FF             MOV      A, R7
+    047B:    FF             MOV      A, R7
+    047C:    FF             MOV      A, R7
+    047D:    FF             MOV      A, R7
+    047E:    FF             MOV      A, R7
+    047F:    FF             MOV      A, R7
+    0480:    FF             MOV      A, R7
+    0481:    FF             MOV      A, R7
+    0482:    FF             MOV      A, R7
+    0483:    FF             MOV      A, R7
+    0484:    FF             MOV      A, R7
+    0485:    FF             MOV      A, R7
+    0486:    FF             MOV      A, R7
+    0487:    FF             MOV      A, R7
+    0488:    FF             MOV      A, R7
+    0489:    FF             MOV      A, R7
+    048A:    FF             MOV      A, R7
+    048B:    FF             MOV      A, R7
+    048C:    FF             MOV      A, R7
+    048D:    FF             MOV      A, R7
+    048E:    FF             MOV      A, R7
+    048F:    FF             MOV      A, R7
+    0490:    FF             MOV      A, R7
+    0491:    FF             MOV      A, R7
+    0492:    FF             MOV      A, R7
+    0493:    FF             MOV      A, R7
+    0494:    FF             MOV      A, R7
+    0495:    FF             MOV      A, R7
+    0496:    FF             MOV      A, R7
+    0497:    FF             MOV      A, R7
+    0498:    FF             MOV      A, R7
+    0499:    FF             MOV      A, R7
+    049A:    FF             MOV      A, R7
+    049B:    FF             MOV      A, R7
+    049C:    FF             MOV      A, R7
+    049D:    FF             MOV      A, R7
+    049E:    FF             MOV      A, R7
+    049F:    FF             MOV      A, R7
+    04A0:    FF             MOV      A, R7
+    04A1:    FF             MOV      A, R7
+    04A2:    FF             MOV      A, R7
+    04A3:    FF             MOV      A, R7
+    04A4:    FF             MOV      A, R7
+    04A5:    FF             MOV      A, R7
+    04A6:    FF             MOV      A, R7
+    04A7:    FF             MOV      A, R7
+    04A8:    FF             MOV      A, R7
+    04A9:    FF             MOV      A, R7
+    04AA:    FF             MOV      A, R7
+    04AB:    FF             MOV      A, R7
+    04AC:    FF             MOV      A, R7
+    04AD:    FF             MOV      A, R7
+    04AE:    FF             MOV      A, R7
+    04AF:    FF             MOV      A, R7
+    04B0:    FF             MOV      A, R7
+    04B1:    FF             MOV      A, R7
+    04B2:    FF             MOV      A, R7
+    04B3:    FF             MOV      A, R7
+    04B4:    FF             MOV      A, R7
+    04B5:    FF             MOV      A, R7
+    04B6:    FF             MOV      A, R7
+    04B7:    FF             MOV      A, R7
+    04B8:    FF             MOV      A, R7
+    04B9:    FF             MOV      A, R7
+    04BA:    FF             MOV      A, R7
+    04BB:    FF             MOV      A, R7
+    04BC:    FF             MOV      A, R7
+    04BD:    FF             MOV      A, R7
+    04BE:    FF             MOV      A, R7
+    04BF:    FF             MOV      A, R7
+    04C0:    FF             MOV      A, R7
+    04C1:    FF             MOV      A, R7
+    04C2:    FF             MOV      A, R7
+    04C3:    FF             MOV      A, R7
+    04C4:    FF             MOV      A, R7
+    04C5:    FF             MOV      A, R7
+    04C6:    FF             MOV      A, R7
+    04C7:    FF             MOV      A, R7
+    04C8:    FF             MOV      A, R7
+    04C9:    FF             MOV      A, R7
+    04CA:    FF             MOV      A, R7
+    04CB:    FF             MOV      A, R7
+    04CC:    FF             MOV      A, R7
+    04CD:    FF             MOV      A, R7
+    04CE:    FF             MOV      A, R7
+    04CF:    FF             MOV      A, R7
+    04D0:    FF             MOV      A, R7
+    04D1:    FF             MOV      A, R7
+    04D2:    FF             MOV      A, R7
+    04D3:    FF             MOV      A, R7
+    04D4:    FF             MOV      A, R7
+    04D5:    FF             MOV      A, R7
+    04D6:    FF             MOV      A, R7
+    04D7:    FF             MOV      A, R7
+    04D8:    FF             MOV      A, R7
+    04D9:    FF             MOV      A, R7
+    04DA:    FF             MOV      A, R7
+    04DB:    FF             MOV      A, R7
+    04DC:    FF             MOV      A, R7
+    04DD:    FF             MOV      A, R7
+    04DE:    FF             MOV      A, R7
+    04DF:    FF             MOV      A, R7
+    04E0:    FF             MOV      A, R7
+    04E1:    FF             MOV      A, R7
+    04E2:    FF             MOV      A, R7
+    04E3:    FF             MOV      A, R7
+    04E4:    FF             MOV      A, R7
+    04E5:    FF             MOV      A, R7
+    04E6:    FF             MOV      A, R7
+    04E7:    FF             MOV      A, R7
+    04E8:    FF             MOV      A, R7
+    04E9:    FF             MOV      A, R7
+    04EA:    FF             MOV      A, R7
+    04EB:    FF             MOV      A, R7
+    04EC:    FF             MOV      A, R7
+    04ED:    FF             MOV      A, R7
+    04EE:    FF             MOV      A, R7
+    04EF:    FF             MOV      A, R7
+    04F0:    FF             MOV      A, R7
+    04F1:    FF             MOV      A, R7
+    04F2:    FF             MOV      A, R7
+    04F3:    FF             MOV      A, R7
+    04F4:    FF             MOV      A, R7
+    04F5:    FF             MOV      A, R7
+    04F6:    FF             MOV      A, R7
+    04F7:    FF             MOV      A, R7
+    04F8:    FF             MOV      A, R7
+    04F9:    FF             MOV      A, R7
+    04FA:    FF             MOV      A, R7
+    04FB:    FF             MOV      A, R7
+    04FC:    FF             MOV      A, R7
+    04FD:    FF             MOV      A, R7
+    04FE:    FF             MOV      A, R7
+    04FF:    FF             MOV      A, R7
+    0500:    FF             MOV      A, R7
+    0501:    FF             MOV      A, R7
+    0502:    FF             MOV      A, R7
+    0503:    FF             MOV      A, R7
+    0504:    FF             MOV      A, R7
+    0505:    FF             MOV      A, R7
+    0506:    FF             MOV      A, R7
+    0507:    FF             MOV      A, R7
+    0508:    FF             MOV      A, R7
+    0509:    FF             MOV      A, R7
+    050A:    FF             MOV      A, R7
+    050B:    FF             MOV      A, R7
+    050C:    FF             MOV      A, R7
+    050D:    FF             MOV      A, R7
+    050E:    FF             MOV      A, R7
+    050F:    FF             MOV      A, R7
+    0510:    FF             MOV      A, R7
+    0511:    FF             MOV      A, R7
+    0512:    FF             MOV      A, R7
+    0513:    FF             MOV      A, R7
+    0514:    FF             MOV      A, R7
+    0515:    FF             MOV      A, R7
+    0516:    FF             MOV      A, R7
+    0517:    FF             MOV      A, R7
+    0518:    FF             MOV      A, R7
+    0519:    FF             MOV      A, R7
+    051A:    FF             MOV      A, R7
+    051B:    FF             MOV      A, R7
+    051C:    FF             MOV      A, R7
+    051D:    FF             MOV      A, R7
+    051E:    FF             MOV      A, R7
+    051F:    FF             MOV      A, R7
+    0520:    FF             MOV      A, R7
+    0521:    FF             MOV      A, R7
+    0522:    FF             MOV      A, R7
+    0523:    FF             MOV      A, R7
+    0524:    FF             MOV      A, R7
+    0525:    FF             MOV      A, R7
+    0526:    FF             MOV      A, R7
+    0527:    FF             MOV      A, R7
+    0528:    FF             MOV      A, R7
+    0529:    FF             MOV      A, R7
+    052A:    FF             MOV      A, R7
+    052B:    FF             MOV      A, R7
+    052C:    FF             MOV      A, R7
+    052D:    FF             MOV      A, R7
+    052E:    FF             MOV      A, R7
+    052F:    FF             MOV      A, R7
+    0530:    FF             MOV      A, R7
+    0531:    FF             MOV      A, R7
+    0532:    FF             MOV      A, R7
+    0533:    FF             MOV      A, R7
+    0534:    FF             MOV      A, R7
+    0535:    FF             MOV      A, R7
+    0536:    FF             MOV      A, R7
+    0537:    FF             MOV      A, R7
+    0538:    FF             MOV      A, R7
+    0539:    FF             MOV      A, R7
+    053A:    FF             MOV      A, R7
+    053B:    FF             MOV      A, R7
+    053C:    FF             MOV      A, R7
+    053D:    FF             MOV      A, R7
+    053E:    FF             MOV      A, R7
+    053F:    FF             MOV      A, R7
+    0540:    FF             MOV      A, R7
+    0541:    FF             MOV      A, R7
+    0542:    FF             MOV      A, R7
+    0543:    FF             MOV      A, R7
+    0544:    FF             MOV      A, R7
+    0545:    FF             MOV      A, R7
+    0546:    FF             MOV      A, R7
+    0547:    FF             MOV      A, R7
+    0548:    FF             MOV      A, R7
+    0549:    FF             MOV      A, R7
+    054A:    FF             MOV      A, R7
+    054B:    FF             MOV      A, R7
+    054C:    FF             MOV      A, R7
+    054D:    FF             MOV      A, R7
+    054E:    FF             MOV      A, R7
+    054F:    FF             MOV      A, R7
+    0550:    FF             MOV      A, R7
+    0551:    FF             MOV      A, R7
+    0552:    FF             MOV      A, R7
+    0553:    FF             MOV      A, R7
+    0554:    FF             MOV      A, R7
+    0555:    FF             MOV      A, R7
+    0556:    FF             MOV      A, R7
+    0557:    FF             MOV      A, R7
+    0558:    FF             MOV      A, R7
+    0559:    FF             MOV      A, R7
+    055A:    FF             MOV      A, R7
+    055B:    FF             MOV      A, R7
+    055C:    FF             MOV      A, R7
+    055D:    FF             MOV      A, R7
+    055E:    FF             MOV      A, R7
+    055F:    FF             MOV      A, R7
+    0560:    FF             MOV      A, R7
+    0561:    FF             MOV      A, R7
+    0562:    FF             MOV      A, R7
+    0563:    FF             MOV      A, R7
+    0564:    FF             MOV      A, R7
+    0565:    FF             MOV      A, R7
+    0566:    FF             MOV      A, R7
+    0567:    FF             MOV      A, R7
+    0568:    FF             MOV      A, R7
+    0569:    FF             MOV      A, R7
+    056A:    FF             MOV      A, R7
+    056B:    FF             MOV      A, R7
+    056C:    FF             MOV      A, R7
+    056D:    FF             MOV      A, R7
+    056E:    FF             MOV      A, R7
+    056F:    FF             MOV      A, R7
+    0570:    FF             MOV      A, R7
+    0571:    FF             MOV      A, R7
+    0572:    FF             MOV      A, R7
+    0573:    FF             MOV      A, R7
+    0574:    FF             MOV      A, R7
+    0575:    FF             MOV      A, R7
+    0576:    FF             MOV      A, R7
+    0577:    FF             MOV      A, R7
+    0578:    FF             MOV      A, R7
+    0579:    FF             MOV      A, R7
+    057A:    FF             MOV      A, R7
+    057B:    FF             MOV      A, R7
+    057C:    FF             MOV      A, R7
+    057D:    FF             MOV      A, R7
+    057E:    FF             MOV      A, R7
+    057F:    FF             MOV      A, R7
+    0580:    FF             MOV      A, R7
+    0581:    FF             MOV      A, R7
+    0582:    FF             MOV      A, R7
+    0583:    FF             MOV      A, R7
+    0584:    FF             MOV      A, R7
+    0585:    FF             MOV      A, R7
+    0586:    FF             MOV      A, R7
+    0587:    FF             MOV      A, R7
+    0588:    FF             MOV      A, R7
+    0589:    FF             MOV      A, R7
+    058A:    FF             MOV      A, R7
+    058B:    FF             MOV      A, R7
+    058C:    FF             MOV      A, R7
+    058D:    FF             MOV      A, R7
+    058E:    FF             MOV      A, R7
+    058F:    FF             MOV      A, R7
+    0590:    FF             MOV      A, R7
+    0591:    FF             MOV      A, R7
+    0592:    FF             MOV      A, R7
+    0593:    FF             MOV      A, R7
+    0594:    FF             MOV      A, R7
+    0595:    FF             MOV      A, R7
+    0596:    FF             MOV      A, R7
+    0597:    FF             MOV      A, R7
+    0598:    FF             MOV      A, R7
+    0599:    FF             MOV      A, R7
+    059A:    FF             MOV      A, R7
+    059B:    FF             MOV      A, R7
+    059C:    FF             MOV      A, R7
+    059D:    FF             MOV      A, R7
+    059E:    FF             MOV      A, R7
+    059F:    FF             MOV      A, R7
+    05A0:    FF             MOV      A, R7
+    05A1:    FF             MOV      A, R7
+    05A2:    FF             MOV      A, R7
+    05A3:    FF             MOV      A, R7
+    05A4:    FF             MOV      A, R7
+    05A5:    FF             MOV      A, R7
+    05A6:    FF             MOV      A, R7
+    05A7:    FF             MOV      A, R7
+    05A8:    FF             MOV      A, R7
+    05A9:    FF             MOV      A, R7
+    05AA:    FF             MOV      A, R7
+    05AB:    FF             MOV      A, R7
+    05AC:    FF             MOV      A, R7
+    05AD:    FF             MOV      A, R7
+    05AE:    FF             MOV      A, R7
+    05AF:    FF             MOV      A, R7
+    05B0:    FF             MOV      A, R7
+    05B1:    FF             MOV      A, R7
+    05B2:    FF             MOV      A, R7
+    05B3:    FF             MOV      A, R7
+    05B4:    FF             MOV      A, R7
+    05B5:    FF             MOV      A, R7
+    05B6:    FF             MOV      A, R7
+    05B7:    FF             MOV      A, R7
+    05B8:    FF             MOV      A, R7
+    05B9:    FF             MOV      A, R7
+    05BA:    FF             MOV      A, R7
+    05BB:    FF             MOV      A, R7
+    05BC:    FF             MOV      A, R7
+    05BD:    FF             MOV      A, R7
+    05BE:    FF             MOV      A, R7
+    05BF:    FF             MOV      A, R7
+    05C0:    FF             MOV      A, R7
+    05C1:    FF             MOV      A, R7
+    05C2:    FF             MOV      A, R7
+    05C3:    FF             MOV      A, R7
+    05C4:    FF             MOV      A, R7
+    05C5:    FF             MOV      A, R7
+    05C6:    FF             MOV      A, R7
+    05C7:    FF             MOV      A, R7
+    05C8:    FF             MOV      A, R7
+    05C9:    FF             MOV      A, R7
+    05CA:    FF             MOV      A, R7
+    05CB:    FF             MOV      A, R7
+    05CC:    FF             MOV      A, R7
+    05CD:    FF             MOV      A, R7
+    05CE:    FF             MOV      A, R7
+    05CF:    FF             MOV      A, R7
+    05D0:    FF             MOV      A, R7
+    05D1:    FF             MOV      A, R7
+    05D2:    FF             MOV      A, R7
+    05D3:    FF             MOV      A, R7
+    05D4:    FF             MOV      A, R7
+    05D5:    FF             MOV      A, R7
+    05D6:    FF             MOV      A, R7
+    05D7:    FF             MOV      A, R7
+    05D8:    FF             MOV      A, R7
+    05D9:    FF             MOV      A, R7
+    05DA:    FF             MOV      A, R7
+    05DB:    FF             MOV      A, R7
+    05DC:    FF             MOV      A, R7
+    05DD:    FF             MOV      A, R7
+    05DE:    FF             MOV      A, R7
+    05DF:    FF             MOV      A, R7
+    05E0:    FF             MOV      A, R7
+    05E1:    FF             MOV      A, R7
+    05E2:    FF             MOV      A, R7
+    05E3:    FF             MOV      A, R7
+    05E4:    FF             MOV      A, R7
+    05E5:    FF             MOV      A, R7
+    05E6:    FF             MOV      A, R7
+    05E7:    FF             MOV      A, R7
+    05E8:    FF             MOV      A, R7
+    05E9:    FF             MOV      A, R7
+    05EA:    FF             MOV      A, R7
+    05EB:    FF             MOV      A, R7
+    05EC:    FF             MOV      A, R7
+    05ED:    FF             MOV      A, R7
+    05EE:    FF             MOV      A, R7
+    05EF:    FF             MOV      A, R7
+    05F0:    FF             MOV      A, R7
+    05F1:    FF             MOV      A, R7
+    05F2:    FF             MOV      A, R7
+    05F3:    FF             MOV      A, R7
+    05F4:    FF             MOV      A, R7
+    05F5:    FF             MOV      A, R7
+    05F6:    FF             MOV      A, R7
+    05F7:    FF             MOV      A, R7
+    05F8:    FF             MOV      A, R7
+    05F9:    FF             MOV      A, R7
+    05FA:    FF             MOV      A, R7
+    05FB:    FF             MOV      A, R7
+    05FC:    FF             MOV      A, R7
+    05FD:    FF             MOV      A, R7
+    05FE:    FF             MOV      A, R7
+    05FF:    FF             MOV      A, R7
+    0600:    FF             MOV      A, R7
+    0601:    FF             MOV      A, R7
+    0602:    FF             MOV      A, R7
+    0603:    FF             MOV      A, R7
+    0604:    FF             MOV      A, R7
+    0605:    FF             MOV      A, R7
+    0606:    FF             MOV      A, R7
+    0607:    FF             MOV      A, R7
+    0608:    FF             MOV      A, R7
+    0609:    FF             MOV      A, R7
+    060A:    FF             MOV      A, R7
+    060B:    FF             MOV      A, R7
+    060C:    FF             MOV      A, R7
+    060D:    FF             MOV      A, R7
+    060E:    FF             MOV      A, R7
+    060F:    FF             MOV      A, R7
+    0610:    FF             MOV      A, R7
+    0611:    FF             MOV      A, R7
+    0612:    FF             MOV      A, R7
+    0613:    FF             MOV      A, R7
+    0614:    FF             MOV      A, R7
+    0615:    FF             MOV      A, R7
+    0616:    FF             MOV      A, R7
+    0617:    FF             MOV      A, R7
+    0618:    FF             MOV      A, R7
+    0619:    FF             MOV      A, R7
+    061A:    FF             MOV      A, R7
+    061B:    FF             MOV      A, R7
+    061C:    FF             MOV      A, R7
+    061D:    FF             MOV      A, R7
+    061E:    FF             MOV      A, R7
+    061F:    FF             MOV      A, R7
+    0620:    FF             MOV      A, R7
+    0621:    FF             MOV      A, R7
+    0622:    FF             MOV      A, R7
+    0623:    FF             MOV      A, R7
+    0624:    FF             MOV      A, R7
+    0625:    FF             MOV      A, R7
+    0626:    FF             MOV      A, R7
+    0627:    FF             MOV      A, R7
+    0628:    FF             MOV      A, R7
+    0629:    FF             MOV      A, R7
+    062A:    FF             MOV      A, R7
+    062B:    FF             MOV      A, R7
+    062C:    FF             MOV      A, R7
+    062D:    FF             MOV      A, R7
+    062E:    FF             MOV      A, R7
+    062F:    FF             MOV      A, R7
+    0630:    FF             MOV      A, R7
+    0631:    FF             MOV      A, R7
+    0632:    FF             MOV      A, R7
+    0633:    FF             MOV      A, R7
+    0634:    FF             MOV      A, R7
+    0635:    FF             MOV      A, R7
+    0636:    FF             MOV      A, R7
+    0637:    FF             MOV      A, R7
+    0638:    FF             MOV      A, R7
+    0639:    FF             MOV      A, R7
+    063A:    FF             MOV      A, R7
+    063B:    FF             MOV      A, R7
+    063C:    FF             MOV      A, R7
+    063D:    FF             MOV      A, R7
+    063E:    FF             MOV      A, R7
+    063F:    FF             MOV      A, R7
+    0640:    FF             MOV      A, R7
+    0641:    FF             MOV      A, R7
+    0642:    FF             MOV      A, R7
+    0643:    FF             MOV      A, R7
+    0644:    FF             MOV      A, R7
+    0645:    FF             MOV      A, R7
+    0646:    FF             MOV      A, R7
+    0647:    FF             MOV      A, R7
+    0648:    FF             MOV      A, R7
+    0649:    FF             MOV      A, R7
+    064A:    FF             MOV      A, R7
+    064B:    FF             MOV      A, R7
+    064C:    FF             MOV      A, R7
+    064D:    FF             MOV      A, R7
+    064E:    FF             MOV      A, R7
+    064F:    FF             MOV      A, R7
+    0650:    FF             MOV      A, R7
+    0651:    FF             MOV      A, R7
+    0652:    FF             MOV      A, R7
+    0653:    FF             MOV      A, R7
+    0654:    FF             MOV      A, R7
+    0655:    FF             MOV      A, R7
+    0656:    FF             MOV      A, R7
+    0657:    FF             MOV      A, R7
+    0658:    FF             MOV      A, R7
+    0659:    FF             MOV      A, R7
+    065A:    FF             MOV      A, R7
+    065B:    FF             MOV      A, R7
+    065C:    FF             MOV      A, R7
+    065D:    FF             MOV      A, R7
+    065E:    FF             MOV      A, R7
+    065F:    FF             MOV      A, R7
+    0660:    FF             MOV      A, R7
+    0661:    FF             MOV      A, R7
+    0662:    FF             MOV      A, R7
+    0663:    FF             MOV      A, R7
+    0664:    FF             MOV      A, R7
+    0665:    FF             MOV      A, R7
+    0666:    FF             MOV      A, R7
+    0667:    FF             MOV      A, R7
+    0668:    FF             MOV      A, R7
+    0669:    FF             MOV      A, R7
+    066A:    FF             MOV      A, R7
+    066B:    FF             MOV      A, R7
+    066C:    FF             MOV      A, R7
+    066D:    FF             MOV      A, R7
+    066E:    FF             MOV      A, R7
+    066F:    FF             MOV      A, R7
+    0670:    FF             MOV      A, R7
+    0671:    FF             MOV      A, R7
+    0672:    FF             MOV      A, R7
+    0673:    FF             MOV      A, R7
+    0674:    FF             MOV      A, R7
+    0675:    FF             MOV      A, R7
+    0676:    FF             MOV      A, R7
+    0677:    FF             MOV      A, R7
+    0678:    FF             MOV      A, R7
+    0679:    FF             MOV      A, R7
+    067A:    FF             MOV      A, R7
+    067B:    FF             MOV      A, R7
+    067C:    FF             MOV      A, R7
+    067D:    FF             MOV      A, R7
+    067E:    FF             MOV      A, R7
+    067F:    FF             MOV      A, R7
+    0680:    FF             MOV      A, R7
+    0681:    FF             MOV      A, R7
+    0682:    FF             MOV      A, R7
+    0683:    FF             MOV      A, R7
+    0684:    FF             MOV      A, R7
+    0685:    FF             MOV      A, R7
+    0686:    FF             MOV      A, R7
+    0687:    FF             MOV      A, R7
+    0688:    FF             MOV      A, R7
+    0689:    FF             MOV      A, R7
+    068A:    FF             MOV      A, R7
+    068B:    FF             MOV      A, R7
+    068C:    FF             MOV      A, R7
+    068D:    FF             MOV      A, R7
+    068E:    FF             MOV      A, R7
+    068F:    FF             MOV      A, R7
+    0690:    FF             MOV      A, R7
+    0691:    FF             MOV      A, R7
+    0692:    FF             MOV      A, R7
+    0693:    FF             MOV      A, R7
+    0694:    FF             MOV      A, R7
+    0695:    FF             MOV      A, R7
+    0696:    FF             MOV      A, R7
+    0697:    FF             MOV      A, R7
+    0698:    FF             MOV      A, R7
+    0699:    FF             MOV      A, R7
+    069A:    FF             MOV      A, R7
+    069B:    FF             MOV      A, R7
+    069C:    FF             MOV      A, R7
+    069D:    FF             MOV      A, R7
+    069E:    FF             MOV      A, R7
+    069F:    FF             MOV      A, R7
+    06A0:    FF             MOV      A, R7
+    06A1:    FF             MOV      A, R7
+    06A2:    FF             MOV      A, R7
+    06A3:    FF             MOV      A, R7
+    06A4:    FF             MOV      A, R7
+    06A5:    FF             MOV      A, R7
+    06A6:    FF             MOV      A, R7
+    06A7:    FF             MOV      A, R7
+    06A8:    FF             MOV      A, R7
+    06A9:    FF             MOV      A, R7
+    06AA:    FF             MOV      A, R7
+    06AB:    FF             MOV      A, R7
+    06AC:    FF             MOV      A, R7
+    06AD:    FF             MOV      A, R7
+    06AE:    FF             MOV      A, R7
+    06AF:    FF             MOV      A, R7
+    06B0:    FF             MOV      A, R7
+    06B1:    FF             MOV      A, R7
+    06B2:    FF             MOV      A, R7
+    06B3:    FF             MOV      A, R7
+    06B4:    FF             MOV      A, R7
+    06B5:    FF             MOV      A, R7
+    06B6:    FF             MOV      A, R7
+    06B7:    FF             MOV      A, R7
+    06B8:    FF             MOV      A, R7
+    06B9:    FF             MOV      A, R7
+    06BA:    FF             MOV      A, R7
+    06BB:    FF             MOV      A, R7
+    06BC:    FF             MOV      A, R7
+    06BD:    FF             MOV      A, R7
+    06BE:    FF             MOV      A, R7
+    06BF:    FF             MOV      A, R7
+    06C0:    FF             MOV      A, R7
+    06C1:    FF             MOV      A, R7
+    06C2:    FF             MOV      A, R7
+    06C3:    FF             MOV      A, R7
+    06C4:    FF             MOV      A, R7
+    06C5:    FF             MOV      A, R7
+    06C6:    FF             MOV      A, R7
+    06C7:    FF             MOV      A, R7
+    06C8:    FF             MOV      A, R7
+    06C9:    FF             MOV      A, R7
+    06CA:    FF             MOV      A, R7
+    06CB:    FF             MOV      A, R7
+    06CC:    FF             MOV      A, R7
+    06CD:    FF             MOV      A, R7
+    06CE:    FF             MOV      A, R7
+    06CF:    FF             MOV      A, R7
+    06D0:    FF             MOV      A, R7
+    06D1:    FF             MOV      A, R7
+    06D2:    FF             MOV      A, R7
+    06D3:    FF             MOV      A, R7
+    06D4:    FF             MOV      A, R7
+    06D5:    FF             MOV      A, R7
+    06D6:    FF             MOV      A, R7
+    06D7:    FF             MOV      A, R7
+    06D8:    FF             MOV      A, R7
+    06D9:    FF             MOV      A, R7
+    06DA:    FF             MOV      A, R7
+    06DB:    FF             MOV      A, R7
+    06DC:    FF             MOV      A, R7
+    06DD:    FF             MOV      A, R7
+    06DE:    FF             MOV      A, R7
+    06DF:    FF             MOV      A, R7
+    06E0:    FF             MOV      A, R7
+    06E1:    FF             MOV      A, R7
+    06E2:    FF             MOV      A, R7
+    06E3:    FF             MOV      A, R7
+    06E4:    FF             MOV      A, R7
+    06E5:    FF             MOV      A, R7
+    06E6:    FF             MOV      A, R7
+    06E7:    FF             MOV      A, R7
+    06E8:    FF             MOV      A, R7
+    06E9:    FF             MOV      A, R7
+    06EA:    FF             MOV      A, R7
+    06EB:    FF             MOV      A, R7
+    06EC:    FF             MOV      A, R7
+    06ED:    FF             MOV      A, R7
+    06EE:    FF             MOV      A, R7
+    06EF:    FF             MOV      A, R7
+    06F0:    FF             MOV      A, R7
+    06F1:    FF             MOV      A, R7
+    06F2:    FF             MOV      A, R7
+    06F3:    FF             MOV      A, R7
+    06F4:    FF             MOV      A, R7
+    06F5:    FF             MOV      A, R7
+    06F6:    FF             MOV      A, R7
+    06F7:    FF             MOV      A, R7
+    06F8:    FF             MOV      A, R7
+    06F9:    FF             MOV      A, R7
+    06FA:    FF             MOV      A, R7
+    06FB:    FF             MOV      A, R7
+    06FC:    FF             MOV      A, R7
+    06FD:    FF             MOV      A, R7
+    06FE:    FF             MOV      A, R7
+    06FF:    FF             MOV      A, R7
+    0700:    FF             MOV      A, R7
+    0701:    FF             MOV      A, R7
+    0702:    FF             MOV      A, R7
+    0703:    FF             MOV      A, R7
+    0704:    FF             MOV      A, R7
+    0705:    FF             MOV      A, R7
+    0706:    FF             MOV      A, R7
+    0707:    FF             MOV      A, R7
+    0708:    FF             MOV      A, R7
+    0709:    FF             MOV      A, R7
+    070A:    FF             MOV      A, R7
+    070B:    FF             MOV      A, R7
+    070C:    FF             MOV      A, R7
+    070D:    FF             MOV      A, R7
+    070E:    FF             MOV      A, R7
+    070F:    FF             MOV      A, R7
+    0710:    FF             MOV      A, R7
+    0711:    FF             MOV      A, R7
+    0712:    FF             MOV      A, R7
+    0713:    FF             MOV      A, R7
+    0714:    FF             MOV      A, R7
+    0715:    FF             MOV      A, R7
+    0716:    FF             MOV      A, R7
+    0717:    FF             MOV      A, R7
+    0718:    FF             MOV      A, R7
+    0719:    FF             MOV      A, R7
+    071A:    FF             MOV      A, R7
+    071B:    FF             MOV      A, R7
+    071C:    FF             MOV      A, R7
+    071D:    FF             MOV      A, R7
+    071E:    FF             MOV      A, R7
+    071F:    FF             MOV      A, R7
+    0720:    FF             MOV      A, R7
+    0721:    FF             MOV      A, R7
+    0722:    FF             MOV      A, R7
+    0723:    FF             MOV      A, R7
+    0724:    FF             MOV      A, R7
+    0725:    FF             MOV      A, R7
+    0726:    FF             MOV      A, R7
+    0727:    FF             MOV      A, R7
+    0728:    FF             MOV      A, R7
+    0729:    FF             MOV      A, R7
+    072A:    FF             MOV      A, R7
+    072B:    FF             MOV      A, R7
+    072C:    FF             MOV      A, R7
+    072D:    FF             MOV      A, R7
+    072E:    FF             MOV      A, R7
+    072F:    FF             MOV      A, R7
+    0730:    FF             MOV      A, R7
+    0731:    FF             MOV      A, R7
+    0732:    FF             MOV      A, R7
+    0733:    FF             MOV      A, R7
+    0734:    FF             MOV      A, R7
+    0735:    FF             MOV      A, R7
+    0736:    FF             MOV      A, R7
+    0737:    FF             MOV      A, R7
+    0738:    FF             MOV      A, R7
+    0739:    FF             MOV      A, R7
+    073A:    FF             MOV      A, R7
+    073B:    FF             MOV      A, R7
+    073C:    FF             MOV      A, R7
+    073D:    FF             MOV      A, R7
+    073E:    FF             MOV      A, R7
+    073F:    FF             MOV      A, R7
+    0740:    FF             MOV      A, R7
+    0741:    FF             MOV      A, R7
+    0742:    FF             MOV      A, R7
+    0743:    FF             MOV      A, R7
+    0744:    FF             MOV      A, R7
+    0745:    FF             MOV      A, R7
+    0746:    FF             MOV      A, R7
+    0747:    FF             MOV      A, R7
+    0748:    FF             MOV      A, R7
+    0749:    FF             MOV      A, R7
+    074A:    FF             MOV      A, R7
+    074B:    FF             MOV      A, R7
+    074C:    FF             MOV      A, R7
+    074D:    FF             MOV      A, R7
+    074E:    FF             MOV      A, R7
+    074F:    FF             MOV      A, R7
+    0750:    FF             MOV      A, R7
+    0751:    FF             MOV      A, R7
+    0752:    FF             MOV      A, R7
+    0753:    FF             MOV      A, R7
+    0754:    FF             MOV      A, R7
+    0755:    FF             MOV      A, R7
+    0756:    FF             MOV      A, R7
+    0757:    FF             MOV      A, R7
+    0758:    FF             MOV      A, R7
+    0759:    FF             MOV      A, R7
+    075A:    FF             MOV      A, R7
+    075B:    FF             MOV      A, R7
+    075C:    FF             MOV      A, R7
+    075D:    FF             MOV      A, R7
+    075E:    FF             MOV      A, R7
+    075F:    FF             MOV      A, R7
+    0760:    FF             MOV      A, R7
+    0761:    FF             MOV      A, R7
+    0762:    FF             MOV      A, R7
+    0763:    FF             MOV      A, R7
+    0764:    FF             MOV      A, R7
+    0765:    FF             MOV      A, R7
+    0766:    FF             MOV      A, R7
+    0767:    FF             MOV      A, R7
+    0768:    FF             MOV      A, R7
+    0769:    FF             MOV      A, R7
+    076A:    FF             MOV      A, R7
+    076B:    FF             MOV      A, R7
+    076C:    FF             MOV      A, R7
+    076D:    FF             MOV      A, R7
+    076E:    FF             MOV      A, R7
+    076F:    FF             MOV      A, R7
+    0770:    FF             MOV      A, R7
+    0771:    FF             MOV      A, R7
+    0772:    FF             MOV      A, R7
+    0773:    FF             MOV      A, R7
+    0774:    FF             MOV      A, R7
+    0775:    FF             MOV      A, R7
+    0776:    FF             MOV      A, R7
+    0777:    FF             MOV      A, R7
+    0778:    FF             MOV      A, R7
+    0779:    FF             MOV      A, R7
+    077A:    FF             MOV      A, R7
+    077B:    FF             MOV      A, R7
+    077C:    FF             MOV      A, R7
+    077D:    FF             MOV      A, R7
+    077E:    FF             MOV      A, R7
+    077F:    FF             MOV      A, R7
+    0780:    FF             MOV      A, R7
+    0781:    FF             MOV      A, R7
+    0782:    FF             MOV      A, R7
+    0783:    FF             MOV      A, R7
+    0784:    FF             MOV      A, R7
+    0785:    FF             MOV      A, R7
+    0786:    FF             MOV      A, R7
+    0787:    FF             MOV      A, R7
+    0788:    FF             MOV      A, R7
+    0789:    FF             MOV      A, R7
+    078A:    FF             MOV      A, R7
+    078B:    FF             MOV      A, R7
+    078C:    FF             MOV      A, R7
+    078D:    FF             MOV      A, R7
+    078E:    FF             MOV      A, R7
+    078F:    FF             MOV      A, R7
+    0790:    FF             MOV      A, R7
+    0791:    FF             MOV      A, R7
+    0792:    FF             MOV      A, R7
+    0793:    FF             MOV      A, R7
+    0794:    FF             MOV      A, R7
+    0795:    FF             MOV      A, R7
+    0796:    FF             MOV      A, R7
+    0797:    FF             MOV      A, R7
+    0798:    FF             MOV      A, R7
+    0799:    FF             MOV      A, R7
+    079A:    FF             MOV      A, R7
+    079B:    FF             MOV      A, R7
+    079C:    FF             MOV      A, R7
+    079D:    FF             MOV      A, R7
+    079E:    FF             MOV      A, R7
+    079F:    FF             MOV      A, R7
+    07A0:    FF             MOV      A, R7
+    07A1:    FF             MOV      A, R7
+    07A2:    FF             MOV      A, R7
+    07A3:    FF             MOV      A, R7
+    07A4:    FF             MOV      A, R7
+    07A5:    FF             MOV      A, R7
+    07A6:    FF             MOV      A, R7
+    07A7:    FF             MOV      A, R7
+    07A8:    FF             MOV      A, R7
+    07A9:    FF             MOV      A, R7
+    07AA:    FF             MOV      A, R7
+    07AB:    FF             MOV      A, R7
+    07AC:    FF             MOV      A, R7
+    07AD:    FF             MOV      A, R7
+    07AE:    FF             MOV      A, R7
+    07AF:    FF             MOV      A, R7
+    07B0:    FF             MOV      A, R7
+    07B1:    FF             MOV      A, R7
+    07B2:    FF             MOV      A, R7
+    07B3:    FF             MOV      A, R7
+    07B4:    FF             MOV      A, R7
+    07B5:    FF             MOV      A, R7
+    07B6:    FF             MOV      A, R7
+    07B7:    FF             MOV      A, R7
+    07B8:    FF             MOV      A, R7
+    07B9:    FF             MOV      A, R7
+    07BA:    FF             MOV      A, R7
+    07BB:    FF             MOV      A, R7
+    07BC:    FF             MOV      A, R7
+    07BD:    FF             MOV      A, R7
+    07BE:    FF             MOV      A, R7
+    07BF:    FF             MOV      A, R7
+
+; subroutine jump from 87H
+; KEYBOARD MATRIX READ (switch statement)
+; A = read data from matrix (P1)
+    07C0:    F7             RLC      A		;A rotate left through carry
+    07C1:    E6 DA          JNC      000DAH	;jump if carry is not set; if bit 7 is 0 (key pressed)
+    07C3:    F7             RLC      A
+    07C4:    E6 DD          JNC      000DDH	;if bit 6 is 0 (key pressed)
+    07C6:    F7             RLC      A
+    07C7:    E6 E0          JNC      000E0H	;if bit 5 is 0 (key pressed)
+    07C9:    F7             RLC      A
+    07CA:    E6 E3          JNC      000E3H	;if bit 4 is 0 (key pressed)
+    07CC:    F7             RLC      A
+    07CD:    E6 E6          JNC      000E6H	;if bit 3 is 0 (key pressed)
+    07CF:    F7             RLC      A
+    07D0:    E6 E9          JNC      000E9H	;if bit 2 is 0 (key pressed)
+    07D2:    F7             RLC      A
+    07D3:    E6 EC          JNC      000ECH	;if bit 1 is 0 (key pressed)
+    07D5:    F7             RLC      A		; bit 0 (now 7) into C
+    07D6:    F7             RLC      A		; bit 0 back to bit 0
+    07D7:    37             CPL      A		; complement (invert bit 0)
+    07D8:    83             RET      		;return to 51H
+
+    07D9:    FF             MOV      A, R7
+    07DA:    F7             RLC      A
+    07DB:    E6 EF          JNC      000EFH
+    07DD:    F7             RLC      A
+    07DE:    E6 EF          JNC      000EFH
+    07E0:    F7             RLC      A
+    07E1:    E6 EF          JNC      000EFH
+    07E3:    F7             RLC      A
+    07E4:    E6 EF          JNC      000EFH
+    07E6:    F7             RLC      A
+    07E7:    E6 EF          JNC      000EFH
+    07E9:    F7             RLC      A
+    07EA:    E6 EF          JNC      000EFH
+    07EC:    F7             RLC      A
+    07ED:    F6 D6          JC       000D6H
+    07EF:    23 FF          MOV      A, #0FFH
+    07F1:    E4 D7          JMP      007D7H
+    07F3:    FF             MOV      A, R7
+    07F4:    FF             MOV      A, R7
+    07F5:    FF             MOV      A, R7
+    07F6:    FF             MOV      A, R7
+    07F7:    FF             MOV      A, R7
+    07F8:    FF             MOV      A, R7
+    07F9:    FF             MOV      A, R7
+    07FA:    FF             MOV      A, R7
+    07FB:    FF             MOV      A, R7
+    07FC:    FF             MOV      A, R7
+    07FD:    FF             MOV      A, R7
+    07FE:    FF             MOV      A, R7
+    07FF:    FF             MOV      A, R7
+
